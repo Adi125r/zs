@@ -1,17 +1,17 @@
 import org.apache.commons.collections4.iterators.PermutationIterator;
 
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class TspBf
 {
     private static TspReader tspReader;
     private static ArrayList<List<Integer>> possibleRoads;
-    private static int theBestRoadValue, possibleRoadItr;
+
     private static int numberthread=3;
     private static int temp=1;
     private static int numpoints;
+    private static Map<Integer,Integer> theBest = new HashMap<Integer, Integer>();
 
     private static void generateData()
     {
@@ -32,28 +32,28 @@ public class TspBf
 
     private static void algorithmBf()
     {
-        int temporaryRoadValue;
-        theBestRoadValue = Integer.MAX_VALUE;
-        possibleRoadItr = 0;
 
         Runnable runnableBf = new Runnable() {
             @Override
             public void run() {
+
+                int theBestRoadValue=Integer.MAX_VALUE;
+                int possibleRoadItr =0;
                 for (int i = numpoints *(temp-1); i < numpoints*temp; i++)
                 {
-                    int temporaryRoadValue2;
+                    int temporaryRoadValue =0;
 
-                    temporaryRoadValue2 = 0;
-                    for (int j = 0; j < possibleRoads.get(i).size() - 1; j++)
-                    {
-                        temporaryRoadValue2 = temporaryRoadValue2 + tspReader.getGraph()[possibleRoads.get(i).get(j)][possibleRoads.get(i).get(j + 1)];
+                    for (int j = 0; j < possibleRoads.get(i).size() - 1; j++) {
+                        temporaryRoadValue = temporaryRoadValue + tspReader.getGraph()[possibleRoads.get(i).get(j)][possibleRoads.get(i).get(j + 1)];
                     }
-                    temporaryRoadValue2 = temporaryRoadValue2 + tspReader.getGraph()[possibleRoads.get(i).get(possibleRoads.get(i).size() - 1)][possibleRoads.get(i).get(0)];
-                    if (temporaryRoadValue2 < theBestRoadValue)
-                    {
-                        theBestRoadValue = temporaryRoadValue2;
-                        possibleRoadItr = i;
-                    }
+                    temporaryRoadValue = temporaryRoadValue + tspReader.getGraph()[possibleRoads.get(i).get(possibleRoads.get(i).size() - 1)][possibleRoads.get(i).get(0)];
+
+                        if (temporaryRoadValue < theBestRoadValue) {
+                            theBestRoadValue = temporaryRoadValue;
+
+                            theBest.put(temporaryRoadValue,i);
+                        }
+
                 }
             }
         };
@@ -75,10 +75,12 @@ temp=1;
 
     private static void printScore()
     {
-        System.out.println(theBestRoadValue);
-        for (int i = 0; i < possibleRoads.get(possibleRoadItr).size(); i++)
+        Map<Integer, Integer> sort = new TreeMap<Integer, Integer>(theBest);
+        Map.Entry<Integer,Integer> entry =sort.entrySet().iterator().next();
+        System.out.println(entry.getKey());
+        for (int i = 0; i < possibleRoads.get(entry.getValue()).size(); i++)
         {
-            System.out.print(possibleRoads.get(possibleRoadItr).get(i));
+            System.out.print(possibleRoads.get(entry.getValue()).get(i));
         }
         System.out.print("0\n");
     }
